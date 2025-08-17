@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Hub - Play Awesome Games</title>
+    <title>3D Snake Game</title>
     <style>
         * {
             margin: 0;
@@ -11,1741 +11,1125 @@
             box-sizing: border-box;
         }
 
-        :root {
-            --primary-color: #667eea;
-            --secondary-color: #764ba2;
-            --accent-color: #f093fb;
-            --dark-bg: #0f0f23;
-            --card-bg: #1a1a2e;
-            --text-primary: #ffffff;
-            --text-secondary: #b8b8d1;
-            --success: #4ade80;
-            --danger: #f87171;
-            --warning: #fbbf24;
-        }
-
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, var(--dark-bg) 0%, #16213e 100%);
-            color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            position: relative;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* Loading Screen */
-        #loadingScreen {
-            position: fixed;
+        #gameCanvas {
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        }
+
+        #score {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        #highScore {
+            position: absolute;
+            top: 70px;
+            left: 20px;
+            color: #ffd700;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        #instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-align: center;
+            font-size: 16px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px 30px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            line-height: 1.5;
+        }
+
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            z-index: 200;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        #gameOver h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        #gameOver p {
+            font-size: 24px;
+            margin: 10px 0;
+        }
+
+        #finalScore {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 32px;
+        }
+
+        #restartBtn {
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #restartBtn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        #loadingScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 10000;
-            transition: opacity 0.5s, visibility 0.5s;
+            z-index: 1000;
+            color: white;
         }
 
-        #loadingScreen.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
-
-        .loading-content {
-            text-align: center;
-        }
-
-        .loading-logo {
-            width: 120px;
-            height: 120px;
-            background: linear-gradient(45deg, var(--accent-color), var(--primary-color));
-            border-radius: 30px;
-            margin: 0 auto 30px;
-            animation: rotateLogo 2s infinite linear;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 48px;
-            font-weight: bold;
-        }
-
-        @keyframes rotateLogo {
-            0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(180deg) scale(1.1); }
-            100% { transform: rotate(360deg) scale(1); }
-        }
-
-        .loading-text {
-            font-size: 24px;
+        #loadingText {
+            font-size: 32px;
             margin-bottom: 20px;
             text-transform: uppercase;
             letter-spacing: 3px;
         }
 
-        .loading-bar {
+        #loadingBar {
             width: 300px;
-            height: 6px;
+            height: 30px;
             background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
+            border-radius: 15px;
             overflow: hidden;
-            margin: 0 auto;
+            position: relative;
         }
 
-        .loading-progress {
+        #loadingProgress {
             height: 100%;
-            background: linear-gradient(90deg, var(--accent-color), var(--text-primary));
-            border-radius: 3px;
+            background: linear-gradient(90deg, #ffd700, #ffed4e);
+            border-radius: 15px;
             width: 0%;
             transition: width 0.3s;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
         }
 
-        /* Navigation */
-        nav {
-            background: rgba(26, 26, 46, 0.95);
-            backdrop-filter: blur(20px);
-            padding: 20px 0;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        #loadingPercent {
+            margin-top: 10px;
+            font-size: 18px;
         }
 
-        .nav-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 32px;
-            font-weight: bold;
-            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        #skinSelector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
             border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .nav-menu {
-            display: flex;
-            gap: 30px;
-            align-items: center;
-        }
-
-        .nav-item {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 16px;
-            transition: color 0.3s;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .nav-item:hover {
-            color: var(--text-primary);
-        }
-
-        .nav-item.active {
-            color: var(--primary-color);
-        }
-
-        .nav-item.active::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: var(--primary-color);
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 8px 20px;
-            background: rgba(102, 126, 234, 0.1);
-            border-radius: 25px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .user-profile:hover {
-            background: rgba(102, 126, 234, 0.2);
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-
-        .user-stats {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-        }
-
-        .user-name {
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .user-score {
-            font-size: 12px;
-            color: var(--warning);
-        }
-
-        /* Main Container */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(240, 147, 251, 0.1) 100%);
-            border-radius: 20px;
-            padding: 60px;
-            margin-bottom: 60px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
-            animation: float 20s infinite linear;
-        }
-
-        @keyframes float {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .hero h1 {
-            font-size: 48px;
-            margin-bottom: 20px;
-            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            position: relative;
-            z-index: 1;
-        }
-
-        .hero p {
-            font-size: 20px;
-            color: var(--text-secondary);
-            margin-bottom: 30px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .hero-stats {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .stat-card {
-            background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
-            padding: 20px 30px;
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .stat-number {
-            font-size: 32px;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-
-        .stat-label {
-            font-size: 14px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        /* Filter Section */
-        .filter-section {
-            margin-bottom: 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .filter-tabs {
-            display: flex;
-            gap: 10px;
-            background: rgba(26, 26, 46, 0.5);
-            padding: 5px;
-            border-radius: 15px;
-        }
-
-        .filter-tab {
-            padding: 10px 20px;
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            border-radius: 10px;
-            transition: all 0.3s;
-            font-size: 14px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .filter-tab:hover {
-            color: var(--text-primary);
-        }
-
-        .filter-tab.active {
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            color: var(--text-primary);
-        }
-
-        .search-bar {
-            display: flex;
-            align-items: center;
-            background: rgba(26, 26, 46, 0.5);
-            border-radius: 15px;
-            padding: 10px 20px;
-            gap: 10px;
-            min-width: 300px;
-        }
-
-        .search-bar input {
-            background: transparent;
-            border: none;
-            color: var(--text-primary);
-            font-size: 14px;
-            outline: none;
-            flex: 1;
-        }
-
-        .search-bar input::placeholder {
-            color: var(--text-secondary);
-        }
-
-        .search-icon {
-            color: var(--text-secondary);
-        }
-
-        /* Game Grid */
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 30px;
-            margin-bottom: 60px;
-        }
-
-        .game-card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            overflow: hidden;
-            transition: transform 0.3s, box-shadow 0.3s;
-            cursor: pointer;
-            position: relative;
-            animation: fadeInUp 0.5s ease-out;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .game-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
-        }
-
-        .game-thumbnail {
-            position: relative;
-            height: 200px;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .game-thumbnail img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .game-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.8);
+        #skinSelector select {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
         }
 
-        .badge-new {
-            background: var(--success);
-            color: var(--dark-bg);
+        #skinSelector option {
+            background: #333;
         }
 
-        .badge-hot {
-            background: var(--danger);
+        #speedIndicator {
+            position: absolute;
+            top: 120px;
+            left: 20px;
+            color: white;
+            font-size: 16px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
         }
 
-        .badge-featured {
-            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
-        }
-
-        .game-info {
-            padding: 20px;
-        }
-
-        .game-title {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .game-description {
-            color: var(--text-secondary);
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 15px;
-        }
-
-        .game-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 15px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .game-rating {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .star {
-            color: var(--warning);
-            font-size: 14px;
-        }
-
-        .game-players {
-            color: var(--text-secondary);
-            font-size: 12px;
-        }
-
-        .play-button {
+        .powerup-notification {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(102, 126, 234, 0.9);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s, transform 0.3s;
-            cursor: pointer;
-        }
-
-        .game-card:hover .play-button {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1.1);
-        }
-
-        .play-icon {
-            width: 0;
-            height: 0;
-            border-left: 20px solid white;
-            border-top: 12px solid transparent;
-            border-bottom: 12px solid transparent;
-            margin-left: 5px;
-        }
-
-        /* Game Container (when playing) */
-        #gameContainer {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            z-index: 9999;
-        }
-
-        #gameContainer.active {
-            display: block;
-        }
-
-        #gameFrame {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        .game-controls {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
-            display: flex;
-            gap: 10px;
-        }
-
-        .game-control-btn {
-            background: rgba(26, 26, 46, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: var(--text-primary);
-            padding: 10px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        .game-control-btn:hover {
-            background: var(--primary-color);
-            transform: scale(1.05);
-        }
-
-        /* Categories Section */
-        .categories {
-            margin-bottom: 60px;
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .section-title {
-            font-size: 28px;
+            color: white;
+            font-size: 32px;
             font-weight: bold;
-        }
-
-        .view-all {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-size: 14px;
-            transition: color 0.3s;
-        }
-
-        .view-all:hover {
-            color: var(--accent-color);
-        }
-
-        .category-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
-        }
-
-        .category-card {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(240, 147, 251, 0.1) 100%);
-            border-radius: 15px;
-            padding: 30px 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .category-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-            border-color: var(--primary-color);
-        }
-
-        .category-icon {
-            font-size: 40px;
-            margin-bottom: 10px;
-        }
-
-        .category-name {
-            font-size: 14px;
-            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            z-index: 150;
+            pointer-events: none;
+            animation: powerupPulse 2s ease-out;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 3px;
         }
 
-        .category-count {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 5px;
-        }
-
-        /* Leaderboard */
-        .leaderboard {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 60px;
-        }
-
-        .leaderboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .leaderboard-title {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .leaderboard-tabs {
-            display: flex;
-            gap: 10px;
-        }
-
-        .leaderboard-tab {
-            padding: 8px 16px;
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text-secondary);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 12px;
-        }
-
-        .leaderboard-tab.active {
-            background: var(--primary-color);
-            color: var(--text-primary);
-            border-color: var(--primary-color);
-        }
-
-        .leaderboard-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .leaderboard-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 10px;
-            transition: background 0.3s;
-        }
-
-        .leaderboard-item:hover {
-            background: rgba(102, 126, 234, 0.1);
-        }
-
-        .leaderboard-rank {
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            border-radius: 50%;
-        }
-
-        .rank-1 {
-            background: linear-gradient(45deg, #ffd700, #ffed4e);
-            color: var(--dark-bg);
-        }
-
-        .rank-2 {
-            background: linear-gradient(45deg, #c0c0c0, #e8e8e8);
-            color: var(--dark-bg);
-        }
-
-        .rank-3 {
-            background: linear-gradient(45deg, #cd7f32, #e8a865);
-            color: var(--dark-bg);
-        }
-
-        .leaderboard-player {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex: 1;
-        }
-
-        .leaderboard-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-
-        .leaderboard-name {
-            font-weight: 600;
-        }
-
-        .leaderboard-score {
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-
-        /* Footer */
-        footer {
-            background: var(--card-bg);
-            padding: 40px 0;
-            margin-top: 100px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .footer-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-        }
-
-        .footer-section h3 {
-            margin-bottom: 20px;
-            color: var(--primary-color);
-        }
-
-        .footer-links {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .footer-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .footer-links a:hover {
-            color: var(--text-primary);
-        }
-
-        .social-links {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .social-link {
-            width: 40px;
-            height: 40px;
-            background: rgba(102, 126, 234, 0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary-color);
-            transition: all 0.3s;
-        }
-
-        .social-link:hover {
-            background: var(--primary-color);
-            color: var(--text-primary);
-            transform: scale(1.1);
-        }
-
-        .footer-bottom {
-            text-align: center;
-            padding-top: 30px;
-            margin-top: 30px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .hero {
-                padding: 40px 20px;
-            }
-
-            .hero h1 {
-                font-size: 32px;
-            }
-
-            .hero-stats {
-                flex-direction: column;
-                gap: 20px;
-            }
-
-            .games-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .filter-section {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .search-bar {
-                width: 100%;
-            }
-
-            .nav-menu {
-                display: none;
-            }
-        }
-
-        /* Notifications */
-        .notification {
-            position: fixed;
-            top: 100px;
-            right: 20px;
-            background: var(--card-bg);
-            border-left: 4px solid var(--primary-color);
-            padding: 20px;
-            border-radius: 10px;
-            min-width: 300px;
-            animation: slideInRight 0.5s ease-out;
-            z-index: 2000;
-        }
-
-        @keyframes slideInRight {
-            from {
-                transform: translateX(400px);
+        @keyframes powerupPulse {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
                 opacity: 0;
             }
-            to {
-                transform: translateX(0);
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
                 opacity: 1;
             }
-        }
-
-        .notification-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .notification-message {
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        /* Achievement popup */
-        .achievement {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            padding: 20px 30px;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            animation: achievementPop 0.5s ease-out;
-            z-index: 2000;
-        }
-
-        @keyframes achievementPop {
-            0% {
-                transform: translateX(-50%) translateY(100px) scale(0);
-            }
-            70% {
-                transform: translateX(-50%) translateY(-10px) scale(1.1);
-            }
             100% {
-                transform: translateX(-50%) translateY(0) scale(1);
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0;
             }
-        }
-
-        .achievement-icon {
-            width: 50px;
-            height: 50px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-        }
-
-        .achievement-text {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .achievement-title {
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        .achievement-description {
-            font-size: 14px;
-            opacity: 0.9;
         }
     </style>
 </head>
 <body>
-    <!-- Loading Screen -->
     <div id="loadingScreen">
-        <div class="loading-content">
-            <div class="loading-logo">GH</div>
-            <div class="loading-text">Loading Game Hub</div>
-            <div class="loading-bar">
-                <div class="loading-progress" id="loadingProgress"></div>
-            </div>
+        <div id="loadingText">Loading Game Assets</div>
+        <div id="loadingBar">
+            <div id="loadingProgress"></div>
         </div>
+        <div id="loadingPercent">0%</div>
     </div>
-
-    <!-- Navigation -->
-    <nav>
-        <div class="nav-container">
-            <div class="logo" onclick="showHome()">
-                <div class="logo-icon">🎮</div>
-                <span>Game Hub</span>
-            </div>
-            <div class="nav-menu">
-                <a class="nav-item active" onclick="showSection('home')">Home</a>
-                <a class="nav-item" onclick="showSection('games')">Games</a>
-                <a class="nav-item" onclick="showSection('leaderboard')">Leaderboard</a>
-                <a class="nav-item" onclick="showSection('achievements')">Achievements</a>
-            </div>
-            <div class="user-profile">
-                <div class="user-avatar" id="userAvatar">P</div>
-                <div class="user-stats">
-                    <div class="user-name" id="userName">Player</div>
-                    <div class="user-score">Score: <span id="totalScore">0</span></div>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Container -->
-    <div class="container">
-        <!-- Hero Section -->
-        <div class="hero">
-            <h1>Welcome to Game Hub</h1>
-            <p>Play amazing games powered by centralized assets from GitHub</p>
-            <div class="hero-stats">
-                <div class="stat-card">
-                    <div class="stat-number" id="totalGames">0</div>
-                    <div class="stat-label">Games Available</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="totalPlayers">0</div>
-                    <div class="stat-label">Active Players</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="totalPlays">0</div>
-                    <div class="stat-label">Games Played</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Filter Section -->
-        <div class="filter-section">
-            <div class="filter-tabs">
-                <button class="filter-tab active" onclick="filterGames('all')">All Games</button>
-                <button class="filter-tab" onclick="filterGames('featured')">Featured</button>
-                <button class="filter-tab" onclick="filterGames('new')">New</button>
-                <button class="filter-tab" onclick="filterGames('popular')">Popular</button>
-            </div>
-            <div class="search-bar">
-                <span class="search-icon">🔍</span>
-                <input type="text" placeholder="Search games..." id="searchInput" onkeyup="searchGames()">
-            </div>
-        </div>
-
-        <!-- Games Grid -->
-        <div class="games-grid" id="gamesGrid">
-            <!-- Games will be dynamically loaded here -->
-        </div>
-
-        <!-- Categories Section -->
-        <div class="categories">
-            <div class="section-header">
-                <h2 class="section-title">Categories</h2>
-                <a href="#" class="view-all">View All →</a>
-            </div>
-            <div class="category-grid" id="categoryGrid">
-                <!-- Categories will be loaded here -->
-            </div>
-        </div>
-
-        <!-- Leaderboard -->
-        <div class="leaderboard">
-            <div class="leaderboard-header">
-                <h2 class="leaderboard-title">Top Players</h2>
-                <div class="leaderboard-tabs">
-                    <button class="leaderboard-tab active" onclick="loadLeaderboard('daily')">Daily</button>
-                    <button class="leaderboard-tab" onclick="loadLeaderboard('weekly')">Weekly</button>
-                    <button class="leaderboard-tab" onclick="loadLeaderboard('allTime')">All Time</button>
-                </div>
-            </div>
-            <div class="leaderboard-list" id="leaderboardList">
-                <!-- Leaderboard will be loaded here -->
-            </div>
-        </div>
+    
+    <div id="score">Score: 0</div>
+    <div id="highScore">High Score: 0</div>
+    <div id="speedIndicator">Speed: Normal</div>
+    
+    <div id="skinSelector">
+        <select id="skinSelect">
+            <option value="green">Green Snake</option>
+            <option value="blue">Blue Snake</option>
+            <option value="red">Red Snake</option>
+            <option value="gold">Golden Snake</option>
+        </select>
     </div>
-
-    <!-- Game Container -->
-    <div id="gameContainer">
-        <div class="game-controls">
-            <button class="game-control-btn" onclick="toggleFullscreen()">🔳 Fullscreen</button>
-            <button class="game-control-btn" onclick="exitGame()">✖ Exit</button>
-        </div>
-        <div id="gameFrame"></div>
+    
+    <div id="instructions">
+        Use Arrow Keys or WASD to move | Eat food to grow | Avoid walls and yourself!<br>
+        Power-ups: 🟡 Speed Boost | 🔵 Slow Motion | 🟣 Invincibility
     </div>
-
-    <!-- Footer -->
-    <footer>
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>About Game Hub</h3>
-                <p style="color: var(--text-secondary); line-height: 1.6;">
-                    Your ultimate destination for browser-based games. All games are powered by centralized assets hosted on GitHub for optimal performance.
-                </p>
-                <div class="social-links">
-                    <a href="#" class="social-link">📧</a>
-                    <a href="#" class="social-link">🐦</a>
-                    <a href="#" class="social-link">💬</a>
-                    <a href="#" class="social-link">📱</a>
-                </div>
-            </div>
-            <div class="footer-section">
-                <h3>Quick Links</h3>
-                <div class="footer-links">
-                    <a href="#">Popular Games</a>
-                    <a href="#">New Releases</a>
-                    <a href="#">Developers</a>
-                    <a href="#">Support</a>
-                </div>
-            </div>
-            <div class="footer-section">
-                <h3>For Developers</h3>
-                <div class="footer-links">
-                    <a href="#">Submit Your Game</a>
-                    <a href="#">Asset Repository</a>
-                    <a href="#">API Documentation</a>
-                    <a href="#">Developer Tools</a>
-                </div>
-            </div>
-            <div class="footer-section">
-                <h3>Community</h3>
-                <div class="footer-links">
-                    <a href="#">Forums</a>
-                    <a href="#">Discord Server</a>
-                    <a href="#">Tournaments</a>
-                    <a href="#">Events</a>
-                </div>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2025 Game Hub. All games use centralized assets from GitHub. Made with ❤️ for gamers.</p>
-        </div>
-    </footer>
+    
+    <div id="gameOver" style="display: none;">
+        <h1>Game Over!</h1>
+        <p>Final Score: <span id="finalScore">0</span></p>
+        <button id="restartBtn">Play Again</button>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // Configuration
-        const GITHUB_USERNAME = 'your-username';
-        const GITHUB_REPO = 'game-assets-repo';
+        // IMPORTANT: Replace with your GitHub username and repository name
+        const GITHUB_USERNAME = 'kody-w';
+        const GITHUB_REPO = 'snake-game-assets';
         const ASSET_BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/main`;
-        
-        // Local storage keys
-        const STORAGE_KEYS = {
-            userData: 'gameHub_userData',
-            gameStats: 'gameHub_gameStats',
-            achievements: 'gameHub_achievements',
-            preferences: 'gameHub_preferences',
-            gameCache: 'gameHub_gameCache'
-        };
 
-        // Game Hub State
-        let gameHubState = {
-            currentUser: null,
-            games: [],
-            categories: [],
-            leaderboard: [],
-            achievements: [],
-            currentGame: null,
-            totalScore: 0,
-            gamesPlayed: 0
-        };
+        // Game configuration
+        const GRID_SIZE = 20;
+        const INITIAL_SPEED = 100;
+        const SPEED_INCREMENT = 5;
+        const CELL_SIZE = 1;
+        const WALL_HEIGHT = 2;
 
-        // Initialize Game Hub
-        async function initGameHub() {
-            console.log('Initializing Game Hub...');
-            
-            // Load user data from local storage
-            loadUserData();
-            
-            // Load game catalog from GitHub
-            await loadGameCatalog();
-            
-            // Load categories
-            loadCategories();
-            
-            // Load leaderboard
-            await loadLeaderboard('daily');
-            
-            // Update UI
-            updateUI();
-            
-            // Hide loading screen
-            setTimeout(() => {
-                document.getElementById('loadingScreen').classList.add('hidden');
-            }, 1500);
-            
-            // Show welcome notification
-            showNotification('Welcome Back!', `Continue your gaming journey, ${gameHubState.currentUser.name}!`);
+        // Game state
+        let scene, camera, renderer;
+        let snake = [];
+        let direction = { x: 1, y: 0 };
+        let nextDirection = { x: 1, y: 0 };
+        let food;
+        let score = 0;
+        let highScore = localStorage.getItem('snakeHighScore') || 0;
+        let gameSpeed = INITIAL_SPEED;
+        let lastMoveTime = 0;
+        let gameRunning = true;
+        let snakeMaterial;
+        let foodMaterial;
+        let wallMaterial;
+        let groundMaterial;
+        let particleSystem;
+        let powerups = [];
+        let activePowerup = null;
+        let powerupEndTime = 0;
+        let invincible = false;
+        let speedMultiplier = 1;
+        let textures = {};
+        let loadedAssets = 0;
+        let totalAssets = 0;
+        let skybox;
+
+        // Asset Manager Class
+        class AssetManager {
+            constructor(baseUrl) {
+                this.baseUrl = baseUrl;
+                this.textureLoader = new THREE.TextureLoader();
+                this.textureLoader.crossOrigin = 'anonymous';
+                this.textures = {};
+                this.materials = {};
+            }
+
+            loadTexture(name, path, onProgress) {
+                return new Promise((resolve, reject) => {
+                    this.textureLoader.load(
+                        `${this.baseUrl}/${path}`,
+                        (texture) => {
+                            this.textures[name] = texture;
+                            if (onProgress) onProgress();
+                            resolve(texture);
+                        },
+                        undefined,
+                        (error) => {
+                            console.warn(`Failed to load ${name}, using fallback`);
+                            if (onProgress) onProgress();
+                            resolve(null);
+                        }
+                    );
+                });
+            }
+
+            async loadAllAssets(onProgress) {
+                const assetList = [
+                    { name: 'snake', path: 'textures/snake-scales.jpg' },
+                    { name: 'snake-blue', path: 'textures/snake-scales-blue.jpg' },
+                    { name: 'snake-red', path: 'textures/snake-scales-red.jpg' },
+                    { name: 'snake-gold', path: 'textures/snake-scales-gold.jpg' },
+                    { name: 'food', path: 'textures/apple.png' },
+                    { name: 'food-green', path: 'textures/food-green.png' },
+                    { name: 'food-gold', path: 'textures/food-gold.png' },
+                    { name: 'ground', path: 'textures/grid.png' },
+                    { name: 'wall', path: 'textures/brick.jpg' },
+                    { name: 'powerup-speed', path: 'textures/powerup-speed.png' },
+                    { name: 'powerup-slow', path: 'textures/powerup-slow.png' },
+                    { name: 'powerup-invincible', path: 'textures/powerup-invincible.png' },
+                    { name: 'particle', path: 'textures/particle.png' },
+                    { name: 'skybox-px', path: 'textures/skybox/px.jpg' },
+                    { name: 'skybox-nx', path: 'textures/skybox/nx.jpg' },
+                    { name: 'skybox-py', path: 'textures/skybox/py.jpg' },
+                    { name: 'skybox-ny', path: 'textures/skybox/ny.jpg' },
+                    { name: 'skybox-pz', path: 'textures/skybox/pz.jpg' },
+                    { name: 'skybox-nz', path: 'textures/skybox/nz.jpg' }
+                ];
+
+                totalAssets = assetList.length;
+                const promises = assetList.map(asset => 
+                    this.loadTexture(asset.name, asset.path, onProgress)
+                );
+
+                await Promise.all(promises);
+                this.createMaterials();
+                return this.textures;
+            }
+
+            createMaterials() {
+                // Snake materials
+                this.materials['snake-green'] = this.textures.snake ? 
+                    new THREE.MeshPhongMaterial({ 
+                        map: this.textures.snake,
+                        shininess: 100,
+                        specular: 0x222222
+                    }) : 
+                    new THREE.MeshPhongMaterial({ 
+                        color: 0x00ff00,
+                        shininess: 100
+                    });
+
+                this.materials['snake-blue'] = this.textures['snake-blue'] ? 
+                    new THREE.MeshPhongMaterial({ 
+                        map: this.textures['snake-blue'],
+                        shininess: 100,
+                        specular: 0x222222
+                    }) : 
+                    new THREE.MeshPhongMaterial({ 
+                        color: 0x0088ff,
+                        shininess: 100
+                    });
+
+                this.materials['snake-red'] = this.textures['snake-red'] ? 
+                    new THREE.MeshPhongMaterial({ 
+                        map: this.textures['snake-red'],
+                        shininess: 100,
+                        specular: 0x222222
+                    }) : 
+                    new THREE.MeshPhongMaterial({ 
+                        color: 0xff0000,
+                        shininess: 100
+                    });
+
+                this.materials['snake-gold'] = this.textures['snake-gold'] ? 
+                    new THREE.MeshPhongMaterial({ 
+                        map: this.textures['snake-gold'],
+                        shininess: 150,
+                        specular: 0x444444
+                    }) : 
+                    new THREE.MeshPhongMaterial({ 
+                        color: 0xffd700,
+                        shininess: 150
+                    });
+
+                // Food material
+                this.materials.food = this.textures.food ? 
+                    new THREE.MeshPhongMaterial({ 
+                        map: this.textures.food,
+                        emissive: 0x441111,
+                        shininess: 80
+                    }) : 
+                    new THREE.MeshPhongMaterial({ 
+                        color: 0xff0000,
+                        emissive: 0x441111,
+                        shininess: 80
+                    });
+
+                // Ground material
+                if (this.textures.ground) {
+                    this.textures.ground.wrapS = THREE.RepeatWrapping;
+                    this.textures.ground.wrapT = THREE.RepeatWrapping;
+                    this.textures.ground.repeat.set(GRID_SIZE / 2, GRID_SIZE / 2);
+                }
+                this.materials.ground = this.textures.ground ? 
+                    new THREE.MeshLambertMaterial({ 
+                        map: this.textures.ground,
+                        side: THREE.DoubleSide
+                    }) : 
+                    new THREE.MeshLambertMaterial({ 
+                        color: 0x333333,
+                        side: THREE.DoubleSide
+                    });
+
+                // Wall material
+                if (this.textures.wall) {
+                    this.textures.wall.wrapS = THREE.RepeatWrapping;
+                    this.textures.wall.wrapT = THREE.RepeatWrapping;
+                }
+                this.materials.wall = this.textures.wall ? 
+                    new THREE.MeshPhongMaterial({ 
+                        map: this.textures.wall
+                    }) : 
+                    new THREE.MeshPhongMaterial({ 
+                        color: 0x8b4513
+                    });
+
+                // Power-up materials
+                this.materials['powerup-speed'] = this.textures['powerup-speed'] ? 
+                    new THREE.MeshPhongMaterial({ 
+                        map: this.textures['powerup-speed'],
+                        emissive: 0x444400,
+                        transparent: true,
+                        opacity: 0.9
+                    }) : 
+                    new THREE.MeshPhongMaterial({ 
+                        color: 0xffff00,
+                        emissive: 0x444400
+                    });
+
+                this.materials['powerup-slow'] = this.textures['powerup-slow'] ? 
+                    new THREE.MeshPhongMaterial({ 
+                        map: this.textures['powerup-slow'],
+                        emissive: 0x004444,
+                        transparent: true,
+                        opacity: 0.9
+                    }) : 
+                    new THREE.MeshPhongMaterial({ 
+                        color: 0x00ffff,
+                        emissive: 0x004444
+                    });
+
+                this.materials['powerup-invincible'] = this.textures['powerup-invincible'] ? 
+                    new THREE.MeshPhongMaterial({ 
+                        map: this.textures['powerup-invincible'],
+                        emissive: 0x440044,
+                        transparent: true,
+                        opacity: 0.9
+                    }) : 
+                    new THREE.MeshPhongMaterial({ 
+                        color: 0xff00ff,
+                        emissive: 0x440044
+                    });
+            }
         }
 
-        // Load user data from local storage
-        function loadUserData() {
-            const savedData = localStorage.getItem(STORAGE_KEYS.userData);
-            if (savedData) {
-                gameHubState.currentUser = JSON.parse(savedData);
-            } else {
-                // Create new user
-                gameHubState.currentUser = {
-                    id: generateUserId(),
-                    name: 'Player' + Math.floor(Math.random() * 9999),
-                    avatar: getRandomAvatar(),
-                    totalScore: 0,
-                    gamesPlayed: 0,
-                    achievements: [],
-                    favorites: [],
-                    joinDate: new Date().toISOString()
+        // Initialize Three.js scene
+        function initScene() {
+            // Scene setup
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x1a1a2e, 10, 50);
+
+            // Camera setup
+            camera = new THREE.PerspectiveCamera(
+                75,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            camera.position.set(0, 25, 25);
+            camera.lookAt(0, 0, 0);
+
+            // Renderer setup
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.body.appendChild(renderer.domElement);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(10, 20, 10);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.camera.left = -30;
+            directionalLight.shadow.camera.right = 30;
+            directionalLight.shadow.camera.top = 30;
+            directionalLight.shadow.camera.bottom = -30;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            scene.add(directionalLight);
+
+            const pointLight = new THREE.PointLight(0xffd700, 0.5, 20);
+            pointLight.position.set(0, 10, 0);
+            scene.add(pointLight);
+
+            // Create skybox
+            if (assetManager.textures['skybox-px']) {
+                const skyboxGeometry = new THREE.BoxGeometry(100, 100, 100);
+                const skyboxMaterials = [
+                    new THREE.MeshBasicMaterial({ map: assetManager.textures['skybox-px'], side: THREE.BackSide }),
+                    new THREE.MeshBasicMaterial({ map: assetManager.textures['skybox-nx'], side: THREE.BackSide }),
+                    new THREE.MeshBasicMaterial({ map: assetManager.textures['skybox-py'], side: THREE.BackSide }),
+                    new THREE.MeshBasicMaterial({ map: assetManager.textures['skybox-ny'], side: THREE.BackSide }),
+                    new THREE.MeshBasicMaterial({ map: assetManager.textures['skybox-pz'], side: THREE.BackSide }),
+                    new THREE.MeshBasicMaterial({ map: assetManager.textures['skybox-nz'], side: THREE.BackSide })
+                ];
+                skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterials);
+                scene.add(skybox);
+            }
+
+            // Ground
+            const groundGeometry = new THREE.PlaneGeometry(GRID_SIZE * CELL_SIZE, GRID_SIZE * CELL_SIZE);
+            groundMaterial = assetManager.materials.ground;
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -CELL_SIZE / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            // Walls
+            wallMaterial = assetManager.materials.wall;
+            createWalls();
+
+            // Initialize particle system
+            createParticleSystem();
+        }
+
+        // Create walls
+        function createWalls() {
+            const wallGeometry = new THREE.BoxGeometry(CELL_SIZE, WALL_HEIGHT, CELL_SIZE);
+            
+            for (let i = -GRID_SIZE/2; i <= GRID_SIZE/2; i++) {
+                // Top wall
+                const topWall = new THREE.Mesh(wallGeometry, wallMaterial);
+                topWall.position.set(i * CELL_SIZE, WALL_HEIGHT/2, -GRID_SIZE/2 * CELL_SIZE);
+                topWall.castShadow = true;
+                scene.add(topWall);
+                
+                // Bottom wall
+                const bottomWall = new THREE.Mesh(wallGeometry, wallMaterial);
+                bottomWall.position.set(i * CELL_SIZE, WALL_HEIGHT/2, GRID_SIZE/2 * CELL_SIZE);
+                bottomWall.castShadow = true;
+                scene.add(bottomWall);
+                
+                // Left wall
+                if (i !== -GRID_SIZE/2 && i !== GRID_SIZE/2) {
+                    const leftWall = new THREE.Mesh(wallGeometry, wallMaterial);
+                    leftWall.position.set(-GRID_SIZE/2 * CELL_SIZE, WALL_HEIGHT/2, i * CELL_SIZE);
+                    leftWall.castShadow = true;
+                    scene.add(leftWall);
+                    
+                    // Right wall
+                    const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
+                    rightWall.position.set(GRID_SIZE/2 * CELL_SIZE, WALL_HEIGHT/2, i * CELL_SIZE);
+                    rightWall.castShadow = true;
+                    scene.add(rightWall);
+                }
+            }
+        }
+
+        // Create particle system
+        function createParticleSystem() {
+            const particleGeometry = new THREE.BufferGeometry();
+            const particleCount = 100;
+            const positions = new Float32Array(particleCount * 3);
+            
+            for (let i = 0; i < particleCount * 3; i++) {
+                positions[i] = (Math.random() - 0.5) * 50;
+            }
+            
+            particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            
+            const particleMaterial = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 0.1,
+                transparent: true,
+                opacity: 0.6,
+                map: assetManager.textures.particle
+            });
+            
+            particleSystem = new THREE.Points(particleGeometry, particleMaterial);
+            scene.add(particleSystem);
+        }
+
+        // Initialize snake
+        function initSnake() {
+            // Clear existing snake
+            snake.forEach(segment => scene.remove(segment.mesh));
+            snake = [];
+            
+            // Get selected skin
+            const skinSelect = document.getElementById('skinSelect');
+            const selectedSkin = skinSelect.value;
+            snakeMaterial = assetManager.materials[`snake-${selectedSkin}`];
+            
+            // Create initial snake
+            const geometry = new THREE.BoxGeometry(CELL_SIZE * 0.9, CELL_SIZE * 0.9, CELL_SIZE * 0.9);
+            
+            for (let i = 0; i < 3; i++) {
+                const segment = new THREE.Mesh(geometry, snakeMaterial);
+                segment.position.set(-i * CELL_SIZE, 0, 0);
+                segment.castShadow = true;
+                segment.receiveShadow = true;
+                scene.add(segment);
+                snake.push({
+                    position: { x: -i, y: 0 },
+                    mesh: segment
+                });
+            }
+        }
+
+        // Create food
+        function createFood() {
+            if (food) {
+                scene.remove(food.mesh);
+            }
+            
+            const geometry = new THREE.SphereGeometry(CELL_SIZE * 0.4, 16, 16);
+            foodMaterial = assetManager.materials.food;
+            const mesh = new THREE.Mesh(geometry, foodMaterial);
+            
+            let position;
+            do {
+                position = {
+                    x: Math.floor(Math.random() * (GRID_SIZE - 2)) - (GRID_SIZE / 2 - 1),
+                    y: Math.floor(Math.random() * (GRID_SIZE - 2)) - (GRID_SIZE / 2 - 1)
                 };
-                saveUserData();
-            }
+            } while (isPositionOccupied(position));
             
-            // Update UI with user data
-            document.getElementById('userName').textContent = gameHubState.currentUser.name;
-            document.getElementById('userAvatar').textContent = gameHubState.currentUser.avatar;
-            document.getElementById('totalScore').textContent = gameHubState.currentUser.totalScore;
+            mesh.position.set(position.x * CELL_SIZE, 0, position.y * CELL_SIZE);
+            mesh.castShadow = true;
+            scene.add(mesh);
+            
+            food = { position, mesh };
         }
 
-        // Save user data to local storage
-        function saveUserData() {
-            localStorage.setItem(STORAGE_KEYS.userData, JSON.stringify(gameHubState.currentUser));
+        // Create power-up
+        function createPowerup() {
+            if (Math.random() > 0.3) return; // 30% chance to spawn power-up
+            
+            const types = ['speed', 'slow', 'invincible'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            
+            const geometry = new THREE.OctahedronGeometry(CELL_SIZE * 0.5);
+            const material = assetManager.materials[`powerup-${type}`];
+            const mesh = new THREE.Mesh(geometry, material);
+            
+            let position;
+            do {
+                position = {
+                    x: Math.floor(Math.random() * (GRID_SIZE - 2)) - (GRID_SIZE / 2 - 1),
+                    y: Math.floor(Math.random() * (GRID_SIZE - 2)) - (GRID_SIZE / 2 - 1)
+                };
+            } while (isPositionOccupied(position));
+            
+            mesh.position.set(position.x * CELL_SIZE, CELL_SIZE, position.y * CELL_SIZE);
+            mesh.castShadow = true;
+            scene.add(mesh);
+            
+            powerups.push({ position, mesh, type });
         }
 
-        // Generate unique user ID
-        function generateUserId() {
-            return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        }
-
-        // Get random avatar emoji
-        function getRandomAvatar() {
-            const avatars = ['🎮', '🎯', '🎲', '🎪', '🎨', '🎭', '🎸', '🎺', '🥷', '🦸', '🧙', '🧑‍🚀'];
-            return avatars[Math.floor(Math.random() * avatars.length)];
-        }
-
-        // Load game catalog
-        async function loadGameCatalog() {
-            try {
-                // Try to load from cache first
-                const cachedGames = localStorage.getItem(STORAGE_KEYS.gameCache);
-                if (cachedGames) {
-                    gameHubState.games = JSON.parse(cachedGames);
-                    renderGames();
+        // Check if position is occupied
+        function isPositionOccupied(position) {
+            // Check snake
+            for (let segment of snake) {
+                if (segment.position.x === position.x && segment.position.y === position.y) {
+                    return true;
                 }
-
-                // Fetch latest game catalog from GitHub
-                const response = await fetch(`${ASSET_BASE_URL}/games/catalog.json`);
-                if (response.ok) {
-                    const catalog = await response.json();
-                    gameHubState.games = catalog.games;
-                    localStorage.setItem(STORAGE_KEYS.gameCache, JSON.stringify(catalog.games));
-                    renderGames();
-                } else {
-                    // Use fallback catalog
-                    gameHubState.games = getFallbackGameCatalog();
-                    renderGames();
+            }
+            
+            // Check food
+            if (food && food.position.x === position.x && food.position.y === position.y) {
+                return true;
+            }
+            
+            // Check power-ups
+            for (let powerup of powerups) {
+                if (powerup.position.x === position.x && powerup.position.y === position.y) {
+                    return true;
                 }
-            } catch (error) {
-                console.log('Using fallback game catalog');
-                gameHubState.games = getFallbackGameCatalog();
-                renderGames();
-            }
-        }
-
-        // Fallback game catalog
-        function getFallbackGameCatalog() {
-            return [
-                {
-                    id: 'snake3d',
-                    title: '3D Snake',
-                    description: 'Classic snake game in stunning 3D with power-ups and multiple skins',
-                    category: 'arcade',
-                    thumbnail: `${ASSET_BASE_URL}/textures/snake-thumbnail.jpg`,
-                    rating: 4.5,
-                    players: 15234,
-                    featured: true,
-                    new: false,
-                    tags: ['arcade', '3d', 'classic'],
-                    gameUrl: 'snake.html',
-                    highScore: 0
-                },
-                {
-                    id: 'doom-shooter',
-                    title: 'DOOM Shooter',
-                    description: 'Intense FPS action with demons, weapons, and non-stop carnage',
-                    category: 'shooter',
-                    thumbnail: `${ASSET_BASE_URL}/textures/doom-thumbnail.jpg`,
-                    rating: 4.8,
-                    players: 28451,
-                    featured: true,
-                    new: true,
-                    tags: ['fps', 'shooter', 'action'],
-                    gameUrl: 'doom.html',
-                    highScore: 0
-                },
-                {
-                    id: 'space-invaders',
-                    title: 'Space Invaders 3D',
-                    description: 'Defend Earth from alien invasion in this modern take on the classic',
-                    category: 'shooter',
-                    thumbnail: `${ASSET_BASE_URL}/textures/space-thumbnail.jpg`,
-                    rating: 4.3,
-                    players: 9876,
-                    featured: false,
-                    new: true,
-                    tags: ['shooter', 'retro', 'space'],
-                    gameUrl: 'space.html',
-                    highScore: 0
-                },
-                {
-                    id: 'racing-fury',
-                    title: 'Racing Fury',
-                    description: 'High-speed racing with stunning graphics and challenging tracks',
-                    category: 'racing',
-                    thumbnail: `${ASSET_BASE_URL}/textures/racing-thumbnail.jpg`,
-                    rating: 4.6,
-                    players: 18923,
-                    featured: true,
-                    new: false,
-                    tags: ['racing', 'cars', 'speed'],
-                    gameUrl: 'racing.html',
-                    highScore: 0
-                },
-                {
-                    id: 'puzzle-master',
-                    title: 'Puzzle Master',
-                    description: 'Challenge your mind with increasingly complex 3D puzzles',
-                    category: 'puzzle',
-                    thumbnail: `${ASSET_BASE_URL}/textures/puzzle-thumbnail.jpg`,
-                    rating: 4.4,
-                    players: 7654,
-                    featured: false,
-                    new: false,
-                    tags: ['puzzle', 'brain', 'logic'],
-                    gameUrl: 'puzzle.html',
-                    highScore: 0
-                },
-                {
-                    id: 'tower-defense',
-                    title: 'Tower Defense 3D',
-                    description: 'Strategic tower defense with waves of enemies and upgrades',
-                    category: 'strategy',
-                    thumbnail: `${ASSET_BASE_URL}/textures/tower-thumbnail.jpg`,
-                    rating: 4.7,
-                    players: 12890,
-                    featured: false,
-                    new: true,
-                    tags: ['strategy', 'tower-defense', 'tactical'],
-                    gameUrl: 'tower.html',
-                    highScore: 0
-                }
-            ];
-        }
-
-        // Render games grid
-        function renderGames(filter = 'all') {
-            const gamesGrid = document.getElementById('gamesGrid');
-            gamesGrid.innerHTML = '';
-            
-            let filteredGames = gameHubState.games;
-            
-            // Apply filter
-            if (filter === 'featured') {
-                filteredGames = gameHubState.games.filter(game => game.featured);
-            } else if (filter === 'new') {
-                filteredGames = gameHubState.games.filter(game => game.new);
-            } else if (filter === 'popular') {
-                filteredGames = [...gameHubState.games].sort((a, b) => b.players - a.players);
             }
             
-            // Create game cards
-            filteredGames.forEach(game => {
-                const gameCard = createGameCard(game);
-                gamesGrid.appendChild(gameCard);
-            });
-            
-            // Update stats
-            document.getElementById('totalGames').textContent = gameHubState.games.length;
-            document.getElementById('totalPlayers').textContent = 
-                gameHubState.games.reduce((sum, game) => sum + game.players, 0).toLocaleString();
+            return false;
         }
 
-        // Create game card element
-        function createGameCard(game) {
-            const card = document.createElement('div');
-            card.className = 'game-card';
-            card.onclick = () => launchGame(game);
+        // Move snake
+        function moveSnake() {
+            if (!gameRunning) return;
             
-            // Get badge
-            let badge = '';
-            if (game.new) {
-                badge = '<div class="game-badge badge-new">NEW</div>';
-            } else if (game.featured) {
-                badge = '<div class="game-badge badge-featured">FEATURED</div>';
-            } else if (game.players > 20000) {
-                badge = '<div class="game-badge badge-hot">HOT</div>';
-            }
+            direction = { ...nextDirection };
             
-            // Generate stars
-            const stars = Array(5).fill('').map((_, i) => 
-                i < Math.floor(game.rating) ? '⭐' : '☆'
-            ).join('');
-            
-            card.innerHTML = `
-                <div class="game-thumbnail">
-                    <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; font-size: 48px;">
-                        ${getGameIcon(game.category)}
-                    </div>
-                    ${badge}
-                    <div class="play-button">
-                        <div class="play-icon"></div>
-                    </div>
-                </div>
-                <div class="game-info">
-                    <h3 class="game-title">${game.title}</h3>
-                    <p class="game-description">${game.description}</p>
-                    <div class="game-meta">
-                        <div class="game-rating">${stars}</div>
-                        <div class="game-players">${game.players.toLocaleString()} players</div>
-                    </div>
-                </div>
-            `;
-            
-            return card;
-        }
-
-        // Get game icon based on category
-        function getGameIcon(category) {
-            const icons = {
-                arcade: '🕹️',
-                shooter: '🔫',
-                racing: '🏎️',
-                puzzle: '🧩',
-                strategy: '♟️',
-                adventure: '🗺️',
-                sports: '⚽',
-                platformer: '🏃'
+            const head = snake[0];
+            const newPosition = {
+                x: head.position.x + direction.x,
+                y: head.position.y + direction.y
             };
-            return icons[category] || '🎮';
-        }
-
-        // Load categories
-        function loadCategories() {
-            const categories = [
-                { name: 'Arcade', icon: '🕹️', count: 12 },
-                { name: 'Shooter', icon: '🔫', count: 8 },
-                { name: 'Racing', icon: '🏎️', count: 5 },
-                { name: 'Puzzle', icon: '🧩', count: 15 },
-                { name: 'Strategy', icon: '♟️', count: 7 },
-                { name: 'Adventure', icon: '🗺️', count: 9 },
-                { name: 'Sports', icon: '⚽', count: 6 },
-                { name: 'Platformer', icon: '🏃', count: 10 }
-            ];
             
-            const categoryGrid = document.getElementById('categoryGrid');
-            categoryGrid.innerHTML = '';
-            
-            categories.forEach(category => {
-                const categoryCard = document.createElement('div');
-                categoryCard.className = 'category-card';
-                categoryCard.onclick = () => filterByCategory(category.name.toLowerCase());
-                
-                categoryCard.innerHTML = `
-                    <div class="category-icon">${category.icon}</div>
-                    <div class="category-name">${category.name}</div>
-                    <div class="category-count">${category.count} games</div>
-                `;
-                
-                categoryGrid.appendChild(categoryCard);
-            });
-        }
-
-        // Load leaderboard
-        async function loadLeaderboard(period) {
-            // Update active tab
-            document.querySelectorAll('.leaderboard-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            // Generate mock leaderboard data
-            const players = [
-                { name: 'DragonSlayer', score: 98450, avatar: '🐉' },
-                { name: 'NinjaWarrior', score: 87320, avatar: '🥷' },
-                { name: 'SpaceAce', score: 76890, avatar: '🚀' },
-                { name: 'PixelMaster', score: 65432, avatar: '🎨' },
-                { name: 'GameKing', score: 54321, avatar: '👑' },
-                { name: 'SpeedDemon', score: 43210, avatar: '😈' },
-                { name: 'ProGamer', score: 32100, avatar: '🎯' },
-                { name: 'ChampionX', score: 21000, avatar: '🏆' }
-            ];
-            
-            const leaderboardList = document.getElementById('leaderboardList');
-            leaderboardList.innerHTML = '';
-            
-            players.forEach((player, index) => {
-                const item = document.createElement('div');
-                item.className = 'leaderboard-item';
-                
-                const rankClass = index < 3 ? `rank-${index + 1}` : '';
-                
-                item.innerHTML = `
-                    <div class="leaderboard-rank ${rankClass}">${index + 1}</div>
-                    <div class="leaderboard-player">
-                        <div class="leaderboard-avatar">${player.avatar}</div>
-                        <div class="leaderboard-name">${player.name}</div>
-                    </div>
-                    <div class="leaderboard-score">${player.score.toLocaleString()}</div>
-                `;
-                
-                leaderboardList.appendChild(item);
-            });
-        }
-
-        // Launch game
-        function launchGame(game) {
-            console.log('Launching game:', game.title);
-            
-            // Update current game
-            gameHubState.currentGame = game;
-            
-            // Update games played
-            gameHubState.currentUser.gamesPlayed++;
-            saveUserData();
-            
-            // Show game container
-            const gameContainer = document.getElementById('gameContainer');
-            gameContainer.classList.add('active');
-            
-            // Load game based on ID
-            const gameFrame = document.getElementById('gameFrame');
-            
-            if (game.id === 'snake3d') {
-                loadSnakeGame(gameFrame);
-            } else if (game.id === 'doom-shooter') {
-                loadDoomShooter(gameFrame);
-            } else {
-                // Load placeholder for other games
-                gameFrame.innerHTML = `
-                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: white; font-size: 24px;">
-                        ${game.title} - Coming Soon!
-                    </div>
-                `;
-            }
-            
-            // Track game start
-            trackGameEvent('game_start', game.id);
-            
-            // Check for achievements
-            checkAchievements();
-        }
-
-        // Load Snake Game
-        function loadSnakeGame(container) {
-            // This would load the actual snake game HTML
-            // For now, we'll create a placeholder
-            container.innerHTML = `
-                <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: white; font-size: 24px;">
-                        3D Snake Game Loading...
-                    </div>
-                </div>
-            `;
-        }
-
-        // Load DOOM Shooter
-        function loadDoomShooter(container) {
-            // This would load the actual DOOM shooter HTML
-            container.innerHTML = `
-                <div style="width: 100%; height: 100%; background: #000;">
-                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: red; font-size: 24px;">
-                        DOOM Shooter Loading...
-                    </div>
-                </div>
-            `;
-        }
-
-        // Exit game
-        function exitGame() {
-            const gameContainer = document.getElementById('gameContainer');
-            gameContainer.classList.remove('active');
-            
-            // Clear game frame
-            document.getElementById('gameFrame').innerHTML = '';
-            
-            // Track game end
-            if (gameHubState.currentGame) {
-                trackGameEvent('game_end', gameHubState.currentGame.id);
-            }
-            
-            gameHubState.currentGame = null;
-        }
-
-        // Toggle fullscreen
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                document.getElementById('gameContainer').requestFullscreen();
-            } else {
-                document.exitFullscreen();
-            }
-        }
-
-        // Filter games
-        function filterGames(filter) {
-            // Update active tab
-            document.querySelectorAll('.filter-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            // Render filtered games
-            renderGames(filter);
-        }
-
-        // Search games
-        function searchGames() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            
-            if (searchTerm === '') {
-                renderGames();
+            // Check collisions
+            if (!invincible && checkCollision(newPosition)) {
+                gameOver();
                 return;
             }
             
-            const filteredGames = gameHubState.games.filter(game => 
-                game.title.toLowerCase().includes(searchTerm) ||
-                game.description.toLowerCase().includes(searchTerm) ||
-                game.tags.some(tag => tag.toLowerCase().includes(searchTerm))
-            );
-            
-            const gamesGrid = document.getElementById('gamesGrid');
-            gamesGrid.innerHTML = '';
-            
-            filteredGames.forEach(game => {
-                const gameCard = createGameCard(game);
-                gamesGrid.appendChild(gameCard);
-            });
-        }
-
-        // Filter by category
-        function filterByCategory(category) {
-            const filteredGames = gameHubState.games.filter(game => 
-                game.category === category
-            );
-            
-            const gamesGrid = document.getElementById('gamesGrid');
-            gamesGrid.innerHTML = '';
-            
-            filteredGames.forEach(game => {
-                const gameCard = createGameCard(game);
-                gamesGrid.appendChild(gameCard);
-            });
-        }
-
-        // Show notification
-        function showNotification(title, message) {
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.innerHTML = `
-                <div class="notification-title">${title}</div>
-                <div class="notification-message">${message}</div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.animation = 'slideInRight 0.5s ease-out reverse';
-                setTimeout(() => {
-                    notification.remove();
-                }, 500);
-            }, 3000);
-        }
-
-        // Show achievement
-        function showAchievement(title, description, icon = '🏆') {
-            const achievement = document.createElement('div');
-            achievement.className = 'achievement';
-            achievement.innerHTML = `
-                <div class="achievement-icon">${icon}</div>
-                <div class="achievement-text">
-                    <div class="achievement-title">${title}</div>
-                    <div class="achievement-description">${description}</div>
-                </div>
-            `;
-            
-            document.body.appendChild(achievement);
-            
-            setTimeout(() => {
-                achievement.style.animation = 'achievementPop 0.5s ease-out reverse';
-                setTimeout(() => {
-                    achievement.remove();
-                }, 500);
-            }, 3000);
-        }
-
-        // Check achievements
-        function checkAchievements() {
-            const gamesPlayed = gameHubState.currentUser.gamesPlayed;
-            
-            if (gamesPlayed === 1) {
-                showAchievement('First Steps', 'Play your first game', '🎮');
-            } else if (gamesPlayed === 10) {
-                showAchievement('Regular Player', 'Play 10 games', '🌟');
-            } else if (gamesPlayed === 50) {
-                showAchievement('Gaming Enthusiast', 'Play 50 games', '🔥');
-            } else if (gamesPlayed === 100) {
-                showAchievement('Game Master', 'Play 100 games', '👑');
-            }
-        }
-
-        // Track game events
-        function trackGameEvent(event, gameId) {
-            const eventData = {
-                event: event,
-                gameId: gameId,
-                userId: gameHubState.currentUser.id,
-                timestamp: new Date().toISOString()
+            // Move snake
+            const newSegment = {
+                position: newPosition,
+                mesh: snake[snake.length - 1].mesh
             };
             
-            // Save to local storage
-            const events = JSON.parse(localStorage.getItem('gameHub_events') || '[]');
-            events.push(eventData);
-            localStorage.setItem('gameHub_events', JSON.stringify(events));
+            // Update mesh position
+            newSegment.mesh.position.set(
+                newPosition.x * CELL_SIZE,
+                0,
+                newPosition.y * CELL_SIZE
+            );
             
-            // Update stats
-            updateStats();
-        }
-
-        // Update stats
-        function updateStats() {
-            const events = JSON.parse(localStorage.getItem('gameHub_events') || '[]');
-            const totalPlays = events.filter(e => e.event === 'game_start').length;
-            document.getElementById('totalPlays').textContent = totalPlays.toLocaleString();
-        }
-
-        // Update UI
-        function updateUI() {
-            // Update loading progress
-            let progress = 0;
-            const loadingInterval = setInterval(() => {
-                progress += 10;
-                document.getElementById('loadingProgress').style.width = progress + '%';
-                if (progress >= 100) {
-                    clearInterval(loadingInterval);
-                }
-            }, 100);
-        }
-
-        // Show section
-        function showSection(section) {
-            // Update active nav item
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            event.target.classList.add('active');
+            // Add to front, remove from back
+            snake.unshift(newSegment);
+            snake.pop();
             
-            // Handle section display
-            console.log('Showing section:', section);
-        }
-
-        // Show home
-        function showHome() {
-            window.scrollTo(0, 0);
-            renderGames();
-        }
-
-        // Initialize on page load
-        window.addEventListener('DOMContentLoaded', initGameHub);
-
-        // Handle page visibility
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden && gameHubState.currentGame) {
-                // Pause game if needed
-                console.log('Game paused');
-            } else {
-                // Resume game if needed
-                console.log('Game resumed');
+            // Check food collision
+            if (food && newPosition.x === food.position.x && newPosition.y === food.position.y) {
+                eatFood();
             }
-        });
+            
+            // Check power-up collision
+            checkPowerupCollision(newPosition);
+        }
 
-        // Handle before unload
-        window.addEventListener('beforeunload', () => {
-            // Save any pending data
-            saveUserData();
-        });
+        // Check collision
+        function checkCollision(position) {
+            // Wall collision
+            if (Math.abs(position.x) >= GRID_SIZE / 2 || Math.abs(position.y) >= GRID_SIZE / 2) {
+                return true;
+            }
+            
+            // Self collision
+            for (let i = 1; i < snake.length; i++) {
+                if (snake[i].position.x === position.x && snake[i].position.y === position.y) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        // Check power-up collision
+        function checkPowerupCollision(position) {
+            for (let i = 0; i < powerups.length; i++) {
+                const powerup = powerups[i];
+                if (powerup.position.x === position.x && powerup.position.y === position.y) {
+                    activatePowerup(powerup.type);
+                    scene.remove(powerup.mesh);
+                    powerups.splice(i, 1);
+                    break;
+                }
+            }
+        }
+
+        // Activate power-up
+        function activatePowerup(type) {
+            // Clear previous power-up
+            activePowerup = type;
+            powerupEndTime = Date.now() + 5000; // 5 seconds duration
+            
+            const notification = document.createElement('div');
+            notification.className = 'powerup-notification';
+            
+            switch(type) {
+                case 'speed':
+                    speedMultiplier = 2;
+                    notification.textContent = 'SPEED BOOST!';
+                    notification.style.color = '#ffff00';
+                    document.getElementById('speedIndicator').textContent = 'Speed: FAST!';
+                    break;
+                case 'slow':
+                    speedMultiplier = 0.5;
+                    notification.textContent = 'SLOW MOTION!';
+                    notification.style.color = '#00ffff';
+                    document.getElementById('speedIndicator').textContent = 'Speed: SLOW';
+                    break;
+                case 'invincible':
+                    invincible = true;
+                    notification.textContent = 'INVINCIBLE!';
+                    notification.style.color = '#ff00ff';
+                    // Make snake glow
+                    snake.forEach(segment => {
+                        segment.mesh.material.emissive = new THREE.Color(0x440044);
+                    });
+                    break;
+            }
+            
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 2000);
+        }
+
+        // Update power-ups
+        function updatePowerups() {
+            if (activePowerup && Date.now() > powerupEndTime) {
+                // Reset power-up effects
+                speedMultiplier = 1;
+                invincible = false;
+                document.getElementById('speedIndicator').textContent = 'Speed: Normal';
+                
+                // Reset snake appearance
+                snake.forEach(segment => {
+                    segment.mesh.material.emissive = new THREE.Color(0x000000);
+                });
+                
+                activePowerup = null;
+            }
+            
+            // Rotate power-up meshes
+            powerups.forEach(powerup => {
+                powerup.mesh.rotation.y += 0.05;
+                powerup.mesh.rotation.x += 0.03;
+                powerup.mesh.position.y = CELL_SIZE + Math.sin(Date.now() * 0.003) * 0.2;
+            });
+        }
+
+        // Eat food
+        function eatFood() {
+            score += 10;
+            document.getElementById('score').textContent = `Score: ${score}`;
+            
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('snakeHighScore', highScore);
+                document.getElementById('highScore').textContent = `High Score: ${highScore}`;
+            }
+            
+            // Grow snake
+            const tail = snake[snake.length - 1];
+            const geometry = new THREE.BoxGeometry(CELL_SIZE * 0.9, CELL_SIZE * 0.9, CELL_SIZE * 0.9);
+            const newSegment = new THREE.Mesh(geometry, snakeMaterial);
+            newSegment.position.copy(tail.mesh.position);
+            newSegment.castShadow = true;
+            newSegment.receiveShadow = true;
+            scene.add(newSegment);
+            
+            snake.push({
+                position: { ...tail.position },
+                mesh: newSegment
+            });
+            
+            // Increase speed
+            gameSpeed = Math.max(50, gameSpeed - SPEED_INCREMENT);
+            
+            // Create new food
+            createFood();
+            
+            // Maybe create power-up
+            createPowerup();
+            
+            // Create eat effect
+            createEatEffect(food.mesh.position);
+        }
+
+        // Create eat effect
+        function createEatEffect(position) {
+            const particleCount = 20;
+            const particles = [];
+            
+            for (let i = 0; i < particleCount; i++) {
+                const geometry = new THREE.SphereGeometry(0.1, 4, 4);
+                const material = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color().setHSL(Math.random(), 1, 0.5),
+                    transparent: true
+                });
+                const particle = new THREE.Mesh(geometry, material);
+                particle.position.copy(position);
+                
+                particle.velocity = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.3,
+                    Math.random() * 0.3,
+                    (Math.random() - 0.5) * 0.3
+                );
+                
+                scene.add(particle);
+                particles.push(particle);
+            }
+            
+            // Animate particles
+            let frame = 0;
+            function animateParticles() {
+                frame++;
+                if (frame > 30) {
+                    particles.forEach(p => scene.remove(p));
+                    return;
+                }
+                
+                particles.forEach(particle => {
+                    particle.position.add(particle.velocity);
+                    particle.material.opacity = 1 - frame / 30;
+                    particle.scale.multiplyScalar(0.95);
+                });
+                
+                requestAnimationFrame(animateParticles);
+            }
+            animateParticles();
+        }
+
+        // Game over
+        function gameOver() {
+            gameRunning = false;
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('gameOver').style.display = 'block';
+        }
+
+        // Restart game
+        function restartGame() {
+            gameRunning = true;
+            score = 0;
+            gameSpeed = INITIAL_SPEED;
+            direction = { x: 1, y: 0 };
+            nextDirection = { x: 1, y: 0 };
+            speedMultiplier = 1;
+            invincible = false;
+            activePowerup = null;
+            
+            document.getElementById('score').textContent = `Score: 0`;
+            document.getElementById('speedIndicator').textContent = 'Speed: Normal';
+            document.getElementById('gameOver').style.display = 'none';
+            
+            // Clear power-ups
+            powerups.forEach(powerup => scene.remove(powerup.mesh));
+            powerups = [];
+            
+            initSnake();
+            createFood();
+        }
+
+        // Handle keyboard input
+        function handleKeyPress(event) {
+            if (!gameRunning && event.key.toLowerCase() === 'r') {
+                restartGame();
+                return;
+            }
+            
+            if (!gameRunning) return;
+            
+            switch(event.key.toLowerCase()) {
+                case 'arrowup':
+                case 'w':
+                    if (direction.y === 0) {
+                        nextDirection = { x: 0, y: -1 };
+                    }
+                    break;
+                case 'arrowdown':
+                case 's':
+                    if (direction.y === 0) {
+                        nextDirection = { x: 0, y: 1 };
+                    }
+                    break;
+                case 'arrowleft':
+                case 'a':
+                    if (direction.x === 0) {
+                        nextDirection = { x: -1, y: 0 };
+                    }
+                    break;
+                case 'arrowright':
+                case 'd':
+                    if (direction.x === 0) {
+                        nextDirection = { x: 1, y: 0 };
+                    }
+                    break;
+            }
+        }
+
+        // Animation loop
+        function animate(currentTime) {
+            requestAnimationFrame(animate);
+            
+            // Update game
+            if (gameRunning && currentTime - lastMoveTime > gameSpeed / speedMultiplier) {
+                moveSnake();
+                lastMoveTime = currentTime;
+            }
+            
+            // Update power-ups
+            updatePowerups();
+            
+            // Animate food
+            if (food) {
+                food.mesh.rotation.y += 0.02;
+                food.mesh.position.y = Math.sin(currentTime * 0.003) * 0.2;
+            }
+            
+            // Animate particles
+            if (particleSystem) {
+                particleSystem.rotation.y += 0.0005;
+            }
+            
+            // Animate camera slightly
+            const cameraOffset = Math.sin(currentTime * 0.0005) * 0.5;
+            camera.position.x = cameraOffset;
+            camera.lookAt(0, 0, 0);
+            
+            // Render
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resize
+        function handleResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Update loading progress
+        function updateLoadingProgress() {
+            loadedAssets++;
+            const percent = Math.round((loadedAssets / totalAssets) * 100);
+            document.getElementById('loadingProgress').style.width = percent + '%';
+            document.getElementById('loadingPercent').textContent = percent + '%';
+        }
+
+        // Initialize game
+        async function init() {
+            // Create asset manager
+            assetManager = new AssetManager(ASSET_BASE_URL);
+            
+            try {
+                // Load all assets
+                await assetManager.loadAllAssets(updateLoadingProgress);
+                
+                // Hide loading screen
+                document.getElementById('loadingScreen').style.display = 'none';
+                
+                // Initialize game
+                initScene();
+                initSnake();
+                createFood();
+                
+                // Update high score display
+                document.getElementById('highScore').textContent = `High Score: ${highScore}`;
+                
+                // Setup event listeners
+                window.addEventListener('keydown', handleKeyPress);
+                window.addEventListener('resize', handleResize);
+                document.getElementById('restartBtn').addEventListener('click', restartGame);
+                document.getElementById('skinSelect').addEventListener('change', () => {
+                    if (gameRunning) {
+                        const selectedSkin = document.getElementById('skinSelect').value;
+                        snakeMaterial = assetManager.materials[`snake-${selectedSkin}`];
+                        snake.forEach(segment => {
+                            segment.mesh.material = snakeMaterial;
+                        });
+                    }
+                });
+                
+                // Start animation
+                animate(0);
+                
+            } catch (error) {
+                console.error('Failed to initialize game:', error);
+                document.getElementById('loadingText').textContent = 'Failed to load assets. Using fallback mode.';
+                
+                // Initialize with fallback materials after a delay
+                setTimeout(() => {
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    initScene();
+                    initSnake();
+                    createFood();
+                    document.getElementById('highScore').textContent = `High Score: ${highScore}`;
+                    window.addEventListener('keydown', handleKeyPress);
+                    window.addEventListener('resize', handleResize);
+                    document.getElementById('restartBtn').addEventListener('click', restartGame);
+                    animate(0);
+                }, 2000);
+            }
+        }
+
+        // Start the game
+        init();
     </script>
 </body>
 </html>
