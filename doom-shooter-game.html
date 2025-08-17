@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOOM-Inspired 3D Shooter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            overflow: hidden;
+            position: relative;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: none;
+        }
+
+        #gameCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #crosshair {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        #crosshair::before,
+        #crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+
+        #crosshair::before {
+            width: 2px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #crosshair::after {
+            width: 20px;
+            height: 2px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #hud {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 150px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 20px;
+            pointer-events: none;
+        }
+
+        .hud-section {
+            color: #ff0000;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        #health {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #health-bar {
+            width: 200px;
+            height: 30px;
+            background: rgba(50,0,0,0.8);
+            border: 2px solid #ff0000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #health-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #ff0000, #ff4444);
+            transition: width 0.3s;
+            box-shadow: 0 0 20px rgba(255,0,0,0.5);
+        }
+
+        #ammo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #score {
+            color: #ffff00;
+        }
+
+        #wave {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ff0000;
+            font-size: 32px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            z-index: 100;
+            letter-spacing: 3px;
+        }
+
+        #gameOver {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            border: 3px solid #ff0000;
+            padding: 40px;
+            text-align: center;
+            z-index: 2000;
+            display: none;
+        }
+
+        #gameOver h1 {
+            color: #ff0000;
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        #finalStats {
+            color: #fff;
+            font-size: 20px;
+            margin: 20px 0;
+            line-height: 1.8;
+        }
+
+        #restartBtn {
+            padding: 15px 40px;
+            font-size: 20px;
+            background: #ff0000;
+            color: #000;
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        #restartBtn:hover {
+            background: #ff4444;
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(255,0,0,0.8);
+        }
+
+        #instructions {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+            z-index: 100;
+            text-align: right;
+            line-height: 1.5;
+        }
+
+        #loadingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+
+        #loadingTitle {
+            color: #ff0000;
+            font-size: 48px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            text-shadow: 0 0 20px rgba(255,0,0,0.5);
+        }
+
+        #loadingBar {
+            width: 400px;
+            height: 30px;
+            background: rgba(50,0,0,0.8);
+            border: 2px solid #ff0000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #loadingProgress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff0000, #ff4444);
+            width: 0%;
+            transition: width 0.3s;
+            box-shadow: 0 0 20px rgba(255,0,0,0.5);
+        }
+
+        #loadingText {
+            color: #ff0000;
+            margin-top: 20px;
+            font-size: 18px;
+            letter-spacing: 2px;
+        }
+
+        .damage-flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, transparent 30%, rgba(255,0,0,0.4) 100%);
+            pointer-events: none;
+            z-index: 90;
+            opacity: 0;
+            animation: damageFlash 0.3s;
+        }
+
+        @keyframes damageFlash {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .kill-notification {
+            position: fixed;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ffff00;
+            font-size: 36px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            z-index: 150;
+            pointer-events: none;
+            animation: killPop 1s ease-out;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        @keyframes killPop {
+            0% {
+                transform: translate(-50%, -50%) scale(0) rotate(-180deg);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.5) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1) rotate(0deg);
+                opacity: 0;
+            }
+        }
+
+        #weaponModel {
+            position: fixed;
+            bottom: -50px;
+            right: 100px;
+            width: 400px;
+            height: 400px;
+            z-index: 95;
+            pointer-events: none;
+            transform: perspective(800px) rotateY(-15deg);
+        }
+
+        .muzzle-flash {
+            position: fixed;
+            bottom: 150px;
+            right: 250px;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(255,255,0,1) 0%, rgba(255,100,0,0.8) 40%, transparent 70%);
+            border-radius: 50%;
+            z-index: 96;
+            pointer-events: none;
+            opacity: 0;
+            animation: muzzleFlash 0.1s;
+        }
+
+        @keyframes muzzleFlash {
+            0% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1.5); }
+            100% { opacity: 0; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div id="loadingScreen">
+        <div id="loadingTitle">DOOM SHOOTER</div>
+        <div id="loadingBar">
+            <div id="loadingProgress"></div>
+        </div>
+        <div id="loadingText">LOADING HELL...</div>
+    </div>
+
+    <div id="crosshair"></div>
+    
+    <div id="wave">WAVE 1</div>
+    
+    <div id="instructions">
+        WASD - Move | MOUSE - Aim<br>
+        LEFT CLICK - Fire | R - Reload<br>
+        SHIFT - Sprint | SPACE - Jump
+    </div>
+
+    <div id="hud">
+        <div class="hud-section" id="health">
+            <span>HEALTH</span>
+            <div id="health-bar">
+                <div id="health-fill" style="width: 100%"></div>
+            </div>
+            <span id="health-value">100</span>
+        </div>
+        
+        <div class="hud-section" id="ammo">
+            <span>AMMO</span>
+            <span id="ammo-count">30/30</span>
+        </div>
+        
+        <div class="hud-section" id="score">
+            SCORE: <span id="score-value">0</span>
+        </div>
+    </div>
+
+    <div id="gameOver">
+        <h1>GAME OVER</h1>
+        <div id="finalStats">
+            <div>FINAL SCORE: <span id="finalScore">0</span></div>
+            <div>DEMONS KILLED: <span id="finalKills">0</span></div>
+            <div>WAVES SURVIVED: <span id="finalWaves">0</span></div>
+        </div>
+        <button id="restartBtn">RESTART</button>
+    </div>
+
+    <canvas id="weaponModel"></canvas>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // IMPORTANT: Replace with your GitHub username and repository name
+        const GITHUB_USERNAME = 'your-username';
+        const GITHUB_REPO = 'doom-shooter-assets';
+        const ASSET_BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/main`;
+
+        // Game configuration
+        const GAME_CONFIG = {
+            playerSpeed: 0.15,
+            sprintMultiplier: 1.8,
+            jumpVelocity: 0.3,
+            gravity: 0.015,
+            mouseSensitivity: 0.002,
+            enemySpeed: 0.03,
+            enemyDamage: 10,
+            weaponDamage: 50,
+            fireRate: 100,
+            reloadTime: 2000,
+            maxAmmo: 30,
+            waveSpawnDelay: 3000
+        };
+
+        // Game state
+        let scene, camera, renderer;
+        let player = {
+            position: new THREE.Vector3(0, 1.6, 0),
+            velocity: new THREE.Vector3(0, 0, 0),
+            rotation: new THREE.Euler(0, 0, 0),
+            health: 100,
+            ammo: GAME_CONFIG.maxAmmo,
+            maxAmmo: GAME_CONFIG.maxAmmo,
+            isReloading: false,
+            canShoot: true,
+            score: 0,
+            kills: 0
+        };
+        
+        let enemies = [];
+        let bullets = [];
+        let explosions = [];
+        let bloodParticles = [];
+        let currentWave = 1;
+        let enemiesPerWave = 5;
+        let gameRunning = true;
+        let clock = new THREE.Clock();
+        
+        // Controls
+        let keys = {};
+        let mouse = { x: 0, y: 0 };
+        let isPointerLocked = false;
+        
+        // Textures and materials
+        let textures = {};
+        let materials = {};
+        let loadedAssets = 0;
+        let totalAssets = 0;
+
+        // Raycaster for shooting
+        const raycaster = new THREE.Raycaster();
+        const mouseVector = new THREE.Vector2();
+
+        // Asset Manager
+        class AssetManager {
+            constructor(baseUrl) {
+                this.baseUrl = baseUrl;
+                this.textureLoader = new THREE.TextureLoader();
+                this.textureLoader.crossOrigin = 'anonymous';
+            }
+
+            async loadTexture(name, path, onProgress) {
+                return new Promise((resolve, reject) => {
+                    this.textureLoader.load(
+                        `${this.baseUrl}/${path}`,
+                        (texture) => {
+                            textures[name] = texture;
+                            if (onProgress) onProgress();
+                            resolve(texture);
+                        },
+                        undefined,
+                        (error) => {
+                            console.warn(`Failed to load ${name}, using fallback`);
+                            if (onProgress) onProgress();
+                            resolve(null);
+                        }
+                    );
+                });
+            }
+
+            async loadAllAssets(onProgress) {
+                const assetList = [
+                    { name: 'wall', path: 'textures/wall-metal.jpg' },
+                    { name: 'wall-bloody', path: 'textures/wall-bloody.jpg' },
+                    { name: 'floor', path: 'textures/floor-grate.jpg' },
+                    { name: 'ceiling', path: 'textures/ceiling-tech.jpg' },
+                    { name: 'demon-skin', path: 'textures/demon-skin.jpg' },
+                    { name: 'demon-eyes', path: 'textures/demon-eyes.jpg' },
+                    { name: 'crate', path: 'textures/crate.jpg' },
+                    { name: 'door', path: 'textures/door-.armor -= armorDamage;
+                damage -= armorDamage;
+            }
+            
+            // Apply remaining damage to health
+            player.health -= damage;
+            
+            // Show damage effect
+            const damageOverlay = document.getElementById('damageOverlay');
+            damageOverlay.classList.add('active');
+            setTimeout(() => {
+                damageOverlay.classList.remove('active');
+            }, 300);
+            
+            // Create blood splatter on screen
+            createScreenBlood();
+            
+            // Check if player died
+            if (player.health <= 0) {
+                player.health = 0;
+                gameOver();
+            }
+        }
+
+        // Create screen blood effect
+        function createScreenBlood() {
+            const blood = document.createElement('div');
+            blood.className = 'blood-splatter';
+            blood.style.left = Math.random() * window.innerWidth + 'px';
+            blood.style.top = Math.random() * window.innerHeight + 'px';
+            
+            // Create random blood drops
+            for (let i = 0; i < 5; i++) {
+                const drop = document.createElement('div');
+                drop.className = 'blood-drop';
+                drop.style.width = (10 + Math.random() * 30) + 'px';
+                drop.style.height = drop.style.width;
+                drop.style.left = Math.random() * 100 + 'px';
+                drop.style.top = Math.random() * 100 + 'px';
+                blood.appendChild(drop);
+            }
+            
+            document.body.appendChild(blood);
+            
+            // Fade out and remove
+            setTimeout(() => {
+                blood.style.opacity = '0';
+                setTimeout(() => {
+                    blood.remove();
+                }, 1000);
+            }, 3000);
+        }
+
+        // Update wave system
+        function updateWaveSystem(elapsedTime) {
+            if (waveActive && enemiesSpawned < enemiesInWave) {
+                if (elapsedTime > nextSpawnTime) {
+                    spawnEnemy();
+                    nextSpawnTime = elapsedTime + (GAME_CONFIG.enemySpawnRate / 1000) * (1 - currentWave * 0.05);
+                }
+            }
+        }
+
+        // Start wave
+        function startWave() {
+            currentWave++;
+            enemiesInWave = Math.floor(GAME_CONFIG.enemiesPerWave * Math.pow(GAME_CONFIG.waveMultiplier, currentWave - 1));
+            enemiesSpawned = 0;
+            waveActive = true;
+            nextSpawnTime = clock.getElapsedTime() + 1;
+            
+            // Update wave display
+            document.getElementById('wave').textContent = `WAVE ${currentWave}`;
+            
+            // Show wave notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                color: #ff0000;
+                font-size: 72px;
+                font-weight: bold;
+                text-shadow: 0 0 30px rgba(255,0,0,0.8);
+                z-index: 200;
+                pointer-events: none;
+                animation: pulse 2s ease-out;
+                text-transform: uppercase;
+                letter-spacing: 5px;
+            `;
+            notification.textContent = `WAVE ${currentWave}`;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 2000);
+            
+            // Spawn power-ups at higher waves
+            if (currentWave % 3 === 0) {
+                spawnPowerUp();
+            }
+        }
+
+        // Complete wave
+        function completeWave() {
+            waveActive = false;
+            
+            // Bonus score
+            const waveBonus = currentWave * 500;
+            player.score += waveBonus;
+            
+            // Show wave complete notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                color: #00ff00;
+                font-size: 48px;
+                font-weight: bold;
+                text-shadow: 0 0 20px rgba(0,255,0,0.8);
+                z-index: 200;
+                pointer-events: none;
+                text-align: center;
+                animation: pulse 3s ease-out;
+                text-transform: uppercase;
+                letter-spacing: 3px;
+            `;
+            notification.innerHTML = `WAVE ${currentWave} COMPLETE!<br><span style="font-size: 32px; color: #ffff00;">+${waveBonus} BONUS</span>`;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+                startWave();
+            }, 3000);
+        }
+
+        // Spawn power-up
+        function spawnPowerUp() {
+            const types = ['quadDamage', 'infiniteAmmo', 'speedBoost'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            
+            const geometry = new THREE.OctahedronGeometry(0.8, 0);
+            const material = new THREE.MeshPhongMaterial({
+                color: type === 'quadDamage' ? 0xff00ff : type === 'infiniteAmmo' ? 0xffff00 : 0x00ffff,
+                emissive: type === 'quadDamage' ? 0xff00ff : type === 'infiniteAmmo' ? 0xffff00 : 0x00ffff,
+                emissiveIntensity: 0.5
+            });
+            
+            const powerup = new THREE.Mesh(geometry, material);
+            powerup.position.set(
+                (Math.random() - 0.5) * 20,
+                1,
+                (Math.random() - 0.5) * 20
+            );
+            powerup.userData = { type: 'powerup', power: type };
+            
+            // Add glow
+            const light = new THREE.PointLight(material.color, 1, 10);
+            powerup.add(light);
+            
+            scene.add(powerup);
+            pickups.push(powerup);
+        }
+
+        // Toggle pause
+        function togglePause() {
+            isPaused = !isPaused;
+            const pauseMenu = document.getElementById('pauseMenu');
+            pauseMenu.style.display = isPaused ? 'block' : 'none';
+            
+            if (isPaused) {
+                document.exitPointerLock();
+            }
+        }
+
+        // Game over
+        function gameOver() {
+            player.isDead = true;
+            
+            // Calculate accuracy
+            const accuracy = player.shotsFired > 0 ? 
+                Math.round((player.shotsHit / player.shotsFired) * 100) : 0;
+            
+            // Update final stats
+            document.getElementById('finalScore').textContent = player.score.toLocaleString();
+            document.getElementById('finalKills').textContent = player.kills;
+            document.getElementById('finalWaves').textContent = currentWave - 1;
+            document.getElementById('finalAccuracy').textContent = accuracy + '%';
+            
+            // Show game over screen
+            document.getElementById('gameOver').style.display = 'block';
+            
+            // Exit pointer lock
+            document.exitPointerLock();
+            
+            // Save high score
+            const highScore = localStorage.getItem('doomHighScore') || 0;
+            if (player.score > highScore) {
+                localStorage.setItem('doomHighScore', player.score);
+            }
+        }
+
+        // Update HUD
+        function updateHUD() {
+            // Health
+            document.getElementById('health-value').textContent = Math.max(0, Math.floor(player.health));
+            document.getElementById('health-fill').style.width = Math.max(0, player.health) + '%';
+            
+            // Color health bar based on health level
+            const healthFill = document.getElementById('health-fill');
+            if (player.health > 66) {
+                healthFill.style.background = 'linear-gradient(90deg, #00ff00, #44ff44)';
+            } else if (player.health > 33) {
+                healthFill.style.background = 'linear-gradient(90deg, #ffff00, #ffff44)';
+            } else {
+                healthFill.style.background = 'linear-gradient(90deg, #ff0000, #ff4444)';
+            }
+            
+            // Armor
+            document.getElementById('armor-value').textContent = Math.max(0, Math.floor(player.armor));
+            
+            // Ammo
+            document.getElementById('ammo-count').textContent = `${player.ammo} / ${player.totalAmmo}`;
+            
+            // Score
+            document.getElementById('score').textContent = `SCORE: ${player.score.toLocaleString()}`;
+            
+            // Kills
+            document.getElementById('kills').textContent = `KILLS: ${player.kills}`;
+            
+            // Wave
+            document.getElementById('wave').textContent = `WAVE ${currentWave}`;
+            
+            // Low health warning
+            if (player.health <= 25 && player.health > 0) {
+                document.getElementById('health-value').style.animation = 'pulse 0.5s infinite';
+            } else {
+                document.getElementById('health-value').style.animation = '';
+            }
+            
+            // Low ammo warning
+            if (player.ammo <= 5 && player.ammo > 0) {
+                document.getElementById('ammo-count').style.color = '#ff0000';
+                document.getElementById('ammo-count').style.animation = 'pulse 0.5s infinite';
+            } else {
+                document.getElementById('ammo-count').style.color = '#ffff00';
+                document.getElementById('ammo-count').style.animation = '';
+            }
+        }
+
+        // Update minimap
+        function updateMinimap() {
+            const minimap = document.getElementById('minimap');
+            
+            // Clear existing dots (except player)
+            const existingDots = minimap.querySelectorAll('.minimap-enemy, .minimap-pickup');
+            existingDots.forEach(dot => dot.remove());
+            
+            // Update player position (always centered)
+            const playerDot = minimap.querySelector('.minimap-player');
+            playerDot.style.left = '50%';
+            playerDot.style.top = '50%';
+            
+            // Add enemy dots
+            enemies.forEach(enemy => {
+                const dot = document.createElement('div');
+                dot.className = 'minimap-dot minimap-enemy';
+                
+                // Calculate relative position
+                const relX = (enemy.mesh.position.x - player.position.x) / GAME_CONFIG.mapSize;
+                const relZ = (enemy.mesh.position.z - player.position.z) / GAME_CONFIG.mapSize;
+                
+                // Convert to minimap coordinates
+                const mapX = 50 + relX * 100;
+                const mapY = 50 + relZ * 100;
+                
+                // Only show if within minimap bounds
+                if (mapX >= 0 && mapX <= 100 && mapY >= 0 && mapY <= 100) {
+                    dot.style.left = mapX + '%';
+                    dot.style.top = mapY + '%';
+                    minimap.appendChild(dot);
+                }
+            });
+            
+            // Add pickup dots
+            pickups.forEach(pickup => {
+                const dot = document.createElement('div');
+                dot.className = 'minimap-dot minimap-pickup';
+                
+                // Calculate relative position
+                const relX = (pickup.position.x - player.position.x) / GAME_CONFIG.mapSize;
+                const relZ = (pickup.position.z - player.position.z) / GAME_CONFIG.mapSize;
+                
+                // Convert to minimap coordinates
+                const mapX = 50 + relX * 100;
+                const mapY = 50 + relZ * 100;
+                
+                // Only show if within minimap bounds
+                if (mapX >= 0 && mapX <= 100 && mapY >= 0 && mapY <= 100) {
+                    dot.style.left = mapX + '%';
+                    dot.style.top = mapY + '%';
+                    minimap.appendChild(dot);
+                }
+            });
+        }
+
+        // Initialize game when page loads
+        window.addEventListener('DOMContentLoaded', init);
+
+        // Prevent right-click context menu
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+
+        // Handle visibility change (pause when tab is hidden)
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && !isPaused && !player.isDead) {
+                togglePause();
+            }
+        });
+
+        // Performance monitoring
+        setInterval(() => {
+            if (!isPaused && !player.isDead) {
+                // console.log(`FPS: ${fps}, Enemies: ${enemies.length}, Particles: ${particles.length}`);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
