@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0",
+  "api": {
+    "baseUrl": "https://api.gamehub.com",
+    "timeout": 5000
+  },
+  "storage": {
+    "maxCacheSize": "50MB",
+    "cacheExpiry": 86400
+  },
+  "graphics": {
+    "defaultQuality": "medium",
+    "antialiasing": true,
+    "shadows": true,
+    "particles": true
+  },
+  "audio": {
+    "masterVolume": 0.8,
+    "musicVolume": 0.6,
+    "sfxVolume": 0.8
+  },
+  "performance": {
+    "targetFPS": 60,
+    "dynamicQuality": true
+  }
+}

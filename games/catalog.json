@@ -1,0 +1,134 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-01-01",
+  "games": [
+    {
+      "id": "snake3d",
+      "title": "3D Snake",
+      "description": "Classic snake game in stunning 3D with power-ups and multiple skins",
+      "category": "arcade",
+      "thumbnail": "textures/snake/thumbnail.jpg",
+      "rating": 4.5,
+      "players": 15234,
+      "featured": true,
+      "new": false,
+      "tags": ["arcade", "3d", "classic", "snake"],
+      "gameUrl": "games/snake.html",
+      "assets": {
+        "textures": ["snake/snake-scales.jpg", "snake/apple.png"],
+        "models": [],
+        "audio": ["music/snake-theme.mp3", "sfx/eat.mp3"]
+      },
+      "controls": {
+        "keyboard": ["WASD", "Arrow Keys"],
+        "mouse": false,
+        "touch": true
+      }
+    },
+    {
+      "id": "doom-shooter",
+      "title": "DOOM Shooter",
+      "description": "Intense FPS action with demons, weapons, and non-stop carnage",
+      "category": "shooter",
+      "thumbnail": "textures/doom/thumbnail.jpg",
+      "rating": 4.8,
+      "players": 28451,
+      "featured": true,
+      "new": true,
+      "tags": ["fps", "shooter", "action", "doom", "demons"],
+      "gameUrl": "games/doom.html",
+      "assets": {
+        "textures": ["doom/wall-metal.jpg", "doom/demon-skin.jpg"],
+        "models": ["weapons/shotgun.obj"],
+        "audio": ["music/doom-theme.mp3", "sfx/shotgun.mp3"]
+      },
+      "controls": {
+        "keyboard": ["WASD", "Space", "Shift"],
+        "mouse": true,
+        "touch": false
+      }
+    },
+    {
+      "id": "space-invaders",
+      "title": "Space Invaders 3D",
+      "description": "Defend Earth from alien invasion in this modern take on the classic",
+      "category": "shooter",
+      "thumbnail": "textures/space/thumbnail.jpg",
+      "rating": 4.3,
+      "players": 9876,
+      "featured": false,
+      "new": true,
+      "tags": ["shooter", "retro", "space", "aliens"],
+      "gameUrl": "games/space.html",
+      "assets": {
+        "textures": ["space/starfield.jpg", "space/alien-ship.jpg"],
+        "models": ["ships/player-ship.obj"],
+        "audio": ["music/space-theme.mp3", "sfx/laser.mp3"]
+      }
+    },
+    {
+      "id": "racing-fury",
+      "title": "Racing Fury",
+      "description": "High-speed racing with stunning graphics and challenging tracks",
+      "category": "racing",
+      "thumbnail": "textures/racing/thumbnail.jpg",
+      "rating": 4.6,
+      "players": 18923,
+      "featured": true,
+      "new": false,
+      "tags": ["racing", "cars", "speed", "multiplayer"],
+      "gameUrl": "games/racing.html",
+      "assets": {
+        "textures": ["racing/asphalt.jpg", "racing/car-paint-red.jpg"],
+        "models": ["cars/sports-car.obj"],
+        "audio": ["music/racing-theme.mp3", "sfx/engine.mp3"]
+      }
+    },
+    {
+      "id": "puzzle-master",
+      "title": "Puzzle Master",
+      "description": "Challenge your mind with increasingly complex 3D puzzles",
+      "category": "puzzle",
+      "thumbnail": "textures/puzzle/thumbnail.jpg",
+      "rating": 4.4,
+      "players": 7654,
+      "featured": false,
+      "new": false,
+      "tags": ["puzzle", "brain", "logic", "3d"],
+      "gameUrl": "games/puzzle.html",
+      "assets": {
+        "textures": ["puzzle/tile-wood.jpg", "puzzle/gem-ruby.jpg"],
+        "models": [],
+        "audio": ["music/puzzle-theme.mp3", "sfx/match.mp3"]
+      }
+    },
+    {
+      "id": "tower-defense",
+      "title": "Tower Defense 3D",
+      "description": "Strategic tower defense with waves of enemies and upgrades",
+      "category": "strategy",
+      "thumbnail": "textures/tower/thumbnail.jpg",
+      "rating": 4.7,
+      "players": 12890,
+      "featured": false,
+      "new": true,
+      "tags": ["strategy", "tower-defense", "tactical"],
+      "gameUrl": "games/tower.html",
+      "assets": {
+        "textures": ["tower/ground-grass.jpg", "tower/tower-stone.jpg"],
+        "models": ["towers/cannon.obj"],
+        "audio": ["music/tower-theme.mp3", "sfx/cannon.mp3"]
+      }
+    }
+  ],
+  "categories": [
+    {"id": "arcade", "name": "Arcade", "icon": "🕹️"},
+    {"id": "shooter", "name": "Shooter", "icon": "🔫"},
+    {"id": "racing", "name": "Racing", "icon": "🏎️"},
+    {"id": "puzzle", "name": "Puzzle", "icon": "🧩"},
+    {"id": "strategy", "name": "Strategy", "icon": "♟️"},
+    {"id": "adventure", "name": "Adventure", "icon": "🗺️"},
+    {"id": "sports", "name": "Sports", "icon": "⚽"},
+    {"id": "platformer", "name": "Platformer", "icon": "🏃"}
+  ]
+}

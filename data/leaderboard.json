@@ -1,0 +1,17 @@
+{
+  "daily": [
+    {"rank": 1, "player": "DragonSlayer", "score": 98450, "avatar": "🐉"},
+    {"rank": 2, "player": "NinjaWarrior", "score": 87320, "avatar": "🥷"},
+    {"rank": 3, "player": "SpaceAce", "score": 76890, "avatar": "🚀"}
+  ],
+  "weekly": [
+    {"rank": 1, "player": "GameMaster", "score": 567890, "avatar": "👑"},
+    {"rank": 2, "player": "ProPlayer", "score": 456789, "avatar": "🎯"},
+    {"rank": 3, "player": "EliteGamer", "score": 345678, "avatar": "⭐"}
+  ],
+  "allTime": [
+    {"rank": 1, "player": "Legend27", "score": 9999999, "avatar": "🏆"},
+    {"rank": 2, "player": "ChampionX", "score": 8765432, "avatar": "🥇"},
+    {"rank": 3, "player": "MasterChief", "score": 7654321, "avatar": "🎖️"}
+  ]
+}

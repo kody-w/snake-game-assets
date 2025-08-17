@@ -1,0 +1,44 @@
+{
+  "achievements": [
+    {
+      "id": "first_play",
+      "name": "First Steps",
+      "description": "Play your first game",
+      "icon": "🎮",
+      "points": 10,
+      "condition": {"type": "games_played", "value": 1}
+    },
+    {
+      "id": "snake_master",
+      "name": "Snake Master",
+      "description": "Score 1000 points in Snake",
+      "icon": "🐍",
+      "points": 50,
+      "condition": {"type": "game_score", "game": "snake3d", "value": 1000}
+    },
+    {
+      "id": "demon_slayer",
+      "name": "Demon Slayer",
+      "description": "Kill 100 demons in DOOM Shooter",
+      "icon": "👹",
+      "points": 100,
+      "condition": {"type": "game_kills", "game": "doom-shooter", "value": 100}
+    },
+    {
+      "id": "speed_demon",
+      "name": "Speed Demon",
+      "description": "Complete a race in under 60 seconds",
+      "icon": "🏁",
+      "points": 75,
+      "condition": {"type": "game_time", "game": "racing-fury", "value": 60}
+    },
+    {
+      "id": "variety_player",
+      "name": "Variety Player",
+      "description": "Play 5 different games",
+      "icon": "🎯",
+      "points": 25,
+      "condition": {"type": "unique_games", "value": 5}
+    }
+  ]
+}
