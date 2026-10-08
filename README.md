@@ -1,3 +1,7 @@
+<!-- retired-notice:start -->
+> **Archived.** No longer maintained; kept public for reference.
+<!-- retired-notice:end -->
+
 # 🎮 Centralized Game Assets Repository
 
 A comprehensive collection of procedurally generated textures and assets for multiple HTML5/WebGL games. All assets are optimized for GitHub CDN hosting.
